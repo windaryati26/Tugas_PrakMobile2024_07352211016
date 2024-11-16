@@ -1,0 +1,153 @@
+import 'dart:async'; // Import untuk mendukung fitur asinkron seperti Future dan delay
+
+// Enum untuk menentukan jenis role pengguna (admin atau customer)
+enum Role { admin, customer }
+
+// Kelas Product untuk merepresentasikan produk dengan atribut nama, harga, dan stok
+class Product {
+  String name; // Nama produk
+  double price; // Harga produk
+  bool inStock; // Status stok produk
+
+  // Konstruktor untuk inisialisasi atribut produk
+  Product(this.name, this.price, this.inStock);
+
+  // Override method toString untuk memberikan representasi string dari produk
+  @override
+  String toString() {
+    return "Product(name: $name, price: \$${price.toStringAsFixed(2)}, inStock: $inStock)";
+  }
+}
+
+// Kelas User sebagai parent class untuk AdminUser dan CustomerUser
+class User {
+  String name; // Nama pengguna
+  int age; // Umur pengguna
+  Role? role; // Peran pengguna (admin atau customer)
+  late Set<Product>
+      products; // Daftar produk yang dimiliki (tipe Set untuk menghindari duplikat)
+
+  // Konstruktor User menginisialisasi nama, umur, dan daftar produk
+  User(this.name, this.age) {
+    products = {}; // Inisialisasi produk sebagai Set kosong
+  }
+
+  // Method untuk menampilkan daftar produk milik user
+  void showProducts() {
+    if (products.isEmpty) {
+      print("$name has no products."); // Jika tidak ada produk
+    } else {
+      print("$name's Products:");
+      for (var product in products) {
+        print(" - ${product.name}: \$${product.price.toStringAsFixed(2)}");
+      }
+    }
+  }
+}
+
+// Subclass AdminUser dengan peran khusus untuk mengelola produk
+class AdminUser extends User {
+  // Konstruktor untuk AdminUser, mewarisi konstruktor User
+  AdminUser(String name, int age) : super(name, age) {
+    role = Role.admin; // Set role menjadi admin
+  }
+
+  // Method untuk menambah produk ke koleksi admin
+  void addProduct(Product product) {
+    try {
+      if (product.inStock) {
+        // Periksa apakah produk tersedia
+        products.add(product); // Tambahkan produk jika stok ada
+        print(
+            "Product ${product.name} has been added to ${name}'s collection.");
+      } else {
+        throw Exception(
+            "Product ${product.name} is out of stock."); // Lempar exception jika stok kosong
+      }
+    } on Exception catch (e) {
+      print("Error adding product: $e"); // Tangkap dan tampilkan pesan error
+    }
+  }
+
+  // Method untuk menghapus produk dari koleksi admin
+  void removeProduct(Product product) {
+    if (products.contains(product)) {
+      products.remove(product); // Hapus produk jika ada dalam koleksi
+      print(
+          "Product ${product.name} has been removed from ${name}'s collection.");
+    } else {
+      print(
+          "Product ${product.name} is not in ${name}'s collection."); // Pesan jika produk tidak ditemukan
+    }
+  }
+}
+
+// Subclass CustomerUser untuk pengguna biasa
+class CustomerUser extends User {
+  // Konstruktor untuk CustomerUser
+  CustomerUser(String name, int age) : super(name, age) {
+    role = Role.customer; // Set role menjadi customer
+  }
+
+  // Override method showProducts untuk membatasi hanya melihat produk
+  @override
+  void showProducts() {
+    super.showProducts(); // Panggil method showProducts dari parent class
+  }
+}
+
+// Fungsi async untuk menambah produk ke dalam "store" dengan simulasi delay
+Future<void> addProductsToStore(
+    Map<String, Product> store, Product product) async {
+  await Future.delayed(Duration(seconds: 1)); // Simulasi penundaan
+  store[product.name] =
+      product; // Menambah produk ke Map dengan nama sebagai kunci
+  print("Product ${product.name} added to the store.");
+}
+
+// Fungsi async untuk mendapatkan detail produk dari "server" dengan simulasi delay
+Future<Product> fetchProductDetails(String productName) async {
+  print("Fetching details for $productName...");
+  await Future.delayed(Duration(seconds: 2)); // Simulasi delay
+  return Product(
+      productName, 999.0, true); // Return produk dengan data simulasi
+}
+
+void main() async {
+  // Membuat beberapa produk
+  Product laptop = Product("Laptop", 1500.0, true);
+  Product phone = Product("Phone", 800.0, true);
+  Product tablet = Product("Tablet", 600.0, false);
+
+  // Membuat Map untuk menyimpan produk di store
+  Map<String, Product> store = {};
+  await addProductsToStore(
+      store, laptop); // Tambahkan produk dengan simulasi delay
+  await addProductsToStore(store, phone);
+  await addProductsToStore(store, tablet);
+
+  // Menampilkan semua produk di store
+  print("\nAvailable Products in Store:");
+  store.forEach((name, product) {
+    print(product);
+  });
+
+  // Membuat pengguna admin dan customer
+  AdminUser admin = AdminUser("David", 30);
+  CustomerUser customer = CustomerUser("Karina", 25);
+
+  // Admin menambahkan produk ke koleksi pribadinya
+  print("\nAdmin Adding Products:");
+  admin.addProduct(phone);
+  admin.addProduct(laptop);
+  admin.showProducts();
+
+  // Mengambil detail produk dari server
+  print("\nFetching Product Details:");
+  Product newProduct = await fetchProductDetails("Smartwatch");
+  print("Fetched product details: $newProduct");
+
+  // Admin menambahkan produk baru yang diambil dari server
+  admin.addProduct(newProduct);
+  admin.showProducts();
+}
