@@ -1,0 +1,232 @@
+import 'dart:math'; // Library untuk fungsi matematika seperti `max`
+
+// Enum untuk mendefinisikan fase proyek
+enum FaseProyek { Perencanaan, Pengembangan, Evaluasi }
+
+// Kelas ProdukDigital untuk mendefinisikan produk digital dengan atribut dan metode terkait
+class ProdukDigital {
+  String namaProduk; // Nama produk
+  double harga; // Harga produk
+  String kategori; // Kategori produk
+
+  ProdukDigital({
+    required this.namaProduk,
+    required this.harga,
+    required this.kategori,
+  });
+
+  // Metode untuk menerapkan diskon pada produk berdasarkan kategori dan harga
+  double terapkanDiskon() {
+    if (kategori == 'NetworkAutomation' && harga > 200000) {
+      return max(
+          harga * 0.85, 200000); // Diskon 15% tetapi harga minimum 200.000
+    }
+    return harga; // Harga tetap jika tidak memenuhi syarat diskon
+  }
+
+  @override
+  String toString() {
+    return 'Nama Produk: $namaProduk, Harga: ${harga.toStringAsFixed(2)}, Kategori: $kategori';
+  }
+}
+
+// Kelas abstrak untuk mendefinisikan atribut dasar dan metode `bekerja` pada karyawan
+abstract class Karyawan {
+  String nama;
+  int umur;
+  String peran;
+
+  Karyawan({
+    required this.nama,
+    required this.umur,
+    required this.peran,
+  });
+
+  // Metode abstrak untuk mendefinisikan cara karyawan bekerja
+  void bekerja();
+}
+
+// Kelas KaryawanTetap sebagai subclass dari Karyawan
+class KaryawanTetap extends Karyawan {
+  KaryawanTetap({
+    required String nama,
+    required int umur,
+    required String peran,
+  }) : super(nama: nama, umur: umur, peran: peran);
+
+  @override
+  void bekerja() {
+    print(
+        '$nama yang berumur $umur tahun bekerja sebagai $peran (Karyawan Tetap).');
+  }
+}
+
+// Kelas KaryawanKontrak sebagai subclass dari Karyawan
+class KaryawanKontrak extends Karyawan {
+  KaryawanKontrak({
+    required String nama,
+    required int umur,
+    required String peran,
+  }) : super(nama: nama, umur: umur, peran: peran);
+
+  @override
+  void bekerja() {
+    print(
+        '$nama yang berumur $umur tahun bekerja sebagai $peran (Karyawan Kontrak).');
+  }
+}
+
+// Mixin Kinerja untuk mengelola produktivitas karyawan
+mixin Kinerja {
+  int produktivitas = 0; // Tingkat produktivitas karyawan
+  DateTime? lastUpdated; // Waktu terakhir produktivitas diperbarui
+
+  // Metode untuk memperbarui produktivitas
+  void updateProduktivitas(int increment) {
+    final currentDate = DateTime.now();
+    if (lastUpdated == null ||
+        currentDate.difference(lastUpdated!).inDays >= 30) {
+      produktivitas = min(100, produktivitas + increment); // Maksimal 100
+      lastUpdated = currentDate;
+    } else {
+      print("Produktivitas tidak dapat diperbarui sebelum 30 hari.");
+    }
+  }
+}
+
+// Kelas Manager sebagai subclass Karyawan yang menggunakan mixin Kinerja
+class Manager extends Karyawan with Kinerja {
+  Manager({
+    required String nama,
+    required int umur,
+    required String peran,
+  }) : super(nama: nama, umur: umur, peran: peran);
+
+  @override
+  void bekerja() {
+    print('$nama yang berumur $umur tahun bekerja sebagai Manager.');
+    if (produktivitas < 85) {
+      print("Produktivitas Manager harus lebih dari 85.");
+    }
+  }
+}
+
+// Kelas NetworkEngineer sebagai subclass Karyawan yang juga menggunakan mixin Kinerja
+class NetworkEngineer extends Karyawan with Kinerja {
+  NetworkEngineer({
+    required String nama,
+    required int umur,
+    required String peran,
+  }) : super(nama: nama, umur: umur, peran: peran);
+
+  @override
+  void bekerja() {
+    print('$nama yang berumur $umur tahun bekerja sebagai Network Engineer.');
+  }
+}
+
+// Manajer fase proyek untuk mengatur transisi antar fase
+class FaseProyekManager {
+  FaseProyek fase = FaseProyek.Perencanaan; // Fase awal proyek
+  int karyawanAktif = 0; // Jumlah karyawan aktif
+  int hariBerjalan = 0; // Lama proyek berjalan
+
+  // Menambah jumlah karyawan aktif
+  void tambahKaryawan(int jumlah) {
+    karyawanAktif += jumlah;
+  }
+
+  // Menambah jumlah hari proyek berjalan
+  void tambahHari(int hari) {
+    hariBerjalan += hari;
+  }
+
+  // Metode untuk mengubah fase proyek
+  void transisiFase() {
+    if (fase == FaseProyek.Perencanaan && karyawanAktif >= 5) {
+      fase = FaseProyek.Pengembangan;
+      print("Proyek beralih ke fase Pengembangan.");
+    } else if (fase == FaseProyek.Pengembangan && hariBerjalan > 45) {
+      fase = FaseProyek.Evaluasi;
+      print("Proyek beralih ke fase Evaluasi.");
+    } else {
+      print("Tidak bisa beralih fase, pastikan semua syarat terpenuhi.");
+    }
+  }
+}
+
+// Kelas untuk mengelola karyawan perusahaan
+class Perusahaan {
+  List<Karyawan> karyawanAktif = []; // Daftar karyawan aktif
+  List<Karyawan> karyawanNonAktif = []; // Daftar karyawan non-aktif
+
+  // Menambah karyawan baru ke daftar aktif
+  void tambahKaryawan(Karyawan karyawan) {
+    if (karyawanAktif.length < 20) {
+      karyawanAktif.add(karyawan);
+      print("${karyawan.nama} telah ditambahkan sebagai karyawan aktif.");
+    } else {
+      print(
+          "Tidak dapat menambah karyawan, batas maksimal 20 karyawan aktif tercapai.");
+    }
+  }
+
+  // Memindahkan karyawan ke daftar non-aktif saat resign
+  void karyawanResign(Karyawan karyawan) {
+    if (karyawanAktif.contains(karyawan)) {
+      karyawanAktif.remove(karyawan);
+      karyawanNonAktif.add(karyawan);
+      print(
+          "${karyawan.nama} telah resign dan dipindahkan ke karyawan non-aktif.");
+    } else {
+      print("Karyawan tidak ditemukan dalam daftar karyawan aktif.");
+    }
+  }
+}
+
+void main() {
+  // Membuat dan menampilkan produk digital
+  ProdukDigital produk1 = ProdukDigital(
+      namaProduk: 'Sistem Manajemen Data',
+      harga: 150000,
+      kategori: 'DataManagement');
+  ProdukDigital produk2 = ProdukDigital(
+      namaProduk: 'Sistem Otomasi Jaringan',
+      harga: 250000,
+      kategori: 'NetworkAutomation');
+
+  print(produk1);
+  print('Harga setelah diskon: ${produk1.terapkanDiskon()}');
+  print(produk2);
+  print('Harga setelah diskon: ${produk2.terapkanDiskon()}');
+
+  // Membuat karyawan
+  KaryawanTetap karyawanTetap =
+      KaryawanTetap(nama: 'Darel', umur: 25, peran: 'Developer');
+  KaryawanKontrak karyawanKontrak =
+      KaryawanKontrak(nama: 'Wiwin', umur: 25, peran: 'Network Engineer');
+  Manager manager = Manager(nama: 'Sani', umur: 27, peran: 'Manager');
+
+  // Menampilkan aktivitas karyawan
+  karyawanTetap.bekerja();
+  karyawanKontrak.bekerja();
+  manager.bekerja();
+
+  // Menambah karyawan ke perusahaan
+  Perusahaan perusahaan = Perusahaan();
+  perusahaan.tambahKaryawan(karyawanTetap);
+  perusahaan.tambahKaryawan(karyawanKontrak);
+
+  // Meningkatkan produktivitas manager
+  manager.updateProduktivitas(10);
+  print('Produktivitas Manager: ${manager.produktivitas}');
+
+  // Mengelola fase proyek
+  FaseProyekManager faseProyekManager = FaseProyekManager();
+  faseProyekManager.tambahKaryawan(6);
+  faseProyekManager.tambahHari(50);
+  faseProyekManager.transisiFase();
+
+  // Mengelola karyawan resign
+  perusahaan.karyawanResign(karyawanTetap);
+}
