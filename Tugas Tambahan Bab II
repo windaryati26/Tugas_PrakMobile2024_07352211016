@@ -1,0 +1,130 @@
+import 'dart:io';
+
+enum KategoriNovel { Fiksi, NonFiksi, Fantasi, Thriller, Romantis }
+
+class Novel {
+  String judul;
+  String pengarang;
+  int tahunTerbit;
+  KategoriNovel kategori;
+
+  Novel({
+    required this.judul,
+    required this.pengarang,
+    required this.tahunTerbit,
+    required this.kategori,
+  });
+
+  void tampilkanInfo() {
+    print('Judul: $judul');
+    print('Pengarang: $pengarang');
+    print('Tahun Terbit: $tahunTerbit');
+    print('Kategori: ${kategori.toString().split('.').last}');
+  }
+
+  // Metode untuk mengedit informasi novel
+  void editInfo({
+    String? newJudul,
+    String? newPengarang,
+    int? newTahunTerbit,
+    KategoriNovel? newKategori,
+  }) {
+    if (newJudul != null) judul = newJudul;
+    if (newPengarang != null) pengarang = newPengarang;
+    if (newTahunTerbit != null) tahunTerbit = newTahunTerbit;
+    if (newKategori != null) kategori = newKategori;
+  }
+}
+
+// Kelas Penerbit untuk mengelola daftar novel
+class Penerbit {
+  List<Novel> daftarNovel = [];
+
+  void tambahNovel(Novel novel) {
+    daftarNovel.add(novel);
+  }
+
+  void tampilkanSemuaNovel() {
+    if (daftarNovel.isEmpty) {
+      print('Tidak ada novel di database.');
+    } else {
+      for (var novel in daftarNovel) {
+        novel.tampilkanInfo();
+        print('------------------');
+      }
+    }
+  }
+
+  void tampilkanBerdasarkanKategori(KategoriNovel kategori) {
+    bool ditemukan = false;
+    for (var novel in daftarNovel) {
+      if (novel.kategori == kategori) {
+        novel.tampilkanInfo();
+        print('------------------');
+        ditemukan = true;
+      }
+    }
+    if (!ditemukan) {
+      print(
+          'Tidak ada novel dengan kategori ${kategori.toString().split('.').last}.');
+    }
+  }
+
+  void editNovel(String judul,
+      {String? newJudul,
+      String? newPengarang,
+      int? newTahunTerbit,
+      KategoriNovel? newKategori}) {
+    for (var novel in daftarNovel) {
+      if (novel.judul == judul) {
+        novel.editInfo(
+            newJudul: newJudul,
+            newPengarang: newPengarang,
+            newTahunTerbit: newTahunTerbit,
+            newKategori: newKategori);
+        print('Novel "$judul" berhasil diedit.');
+        return;
+      }
+    }
+    print('Novel dengan judul "$judul" tidak ditemukan.');
+  }
+}
+
+void main() {
+  // Membuat objek Penerbit
+  Penerbit penerbit = Penerbit();
+
+  // Menambahkan beberapa novel
+  penerbit.tambahNovel(Novel(
+    judul: 'Harry Potter and the Sorcerer\'s Stone',
+    pengarang: 'J.K. Rowling',
+    tahunTerbit: 1997,
+    kategori: KategoriNovel.Fantasi,
+  ));
+
+  penerbit.tambahNovel(Novel(
+    judul: 'The Catcher in the Rye',
+    pengarang: 'J.D. Salinger',
+    tahunTerbit: 1951,
+    kategori: KategoriNovel.Fiksi,
+  ));
+
+  penerbit.tambahNovel(Novel(
+    judul: 'The Art of War',
+    pengarang: 'Sun Tzu',
+    tahunTerbit: 2000,
+    kategori: KategoriNovel.NonFiksi,
+  ));
+
+  print('Semua Novel yang Terdaftar:');
+  penerbit.tampilkanSemuaNovel();
+
+  print('\nNovel dengan Kategori Fantasi:');
+  penerbit.tampilkanBerdasarkanKategori(KategoriNovel.Fantasi);
+
+  penerbit.editNovel('Harry Potter and the Sorcerer\'s Stone',
+      newTahunTerbit: 2000, newKategori: KategoriNovel.Fiksi);
+
+  print('\nInformasi Setelah Diedit:');
+  penerbit.tampilkanSemuaNovel();
+}
